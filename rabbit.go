@@ -2,6 +2,19 @@ package queueing
 
 import "github.com/streadway/amqp"
 
+type RabbitMqMessage struct {
+	delivery amqp.Delivery
+	body []byte
+}
+
+func (r RabbitMqMessage) GetBody() []byte {
+	return r.body
+}
+
+func (r RabbitMqMessage) Ack() error {
+	return r.delivery.Ack(false)
+}
+
 type RabbitMqChannel struct {
 	name string
 	ch *amqp.Channel
@@ -23,7 +36,7 @@ func (r *RabbitMqChannel) Publish(contentType string, msg []byte) error {
 }
 
 func (r *RabbitMqChannel) Consume() (<-chan Message, error) {
-	msgs, err := r.ch.Consume(r.name, "", true, false, false, false, nil)
+	msgs, err := r.ch.Consume(r.name, "", false, false, false, false, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -33,8 +46,9 @@ func (r *RabbitMqChannel) Consume() (<-chan Message, error) {
 	go func(in <-chan amqp.Delivery, out chan Message) {
 		for {
 			del := <-in
-			msg := Message{
-				Body: del.Body,
+			msg := RabbitMqMessage{
+				delivery: del,
+				body: del.Body,
 			}
 			out <- msg
 		}

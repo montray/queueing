@@ -4,8 +4,13 @@ const (
 	TYPE_JSON = "application/json"
 )
 
-type Message struct {
-	Body []byte
+type ChannelConfig struct {
+	AutoAck bool
+}
+
+type Message interface {
+	GetBody() []byte
+	Ack() error
 }
 
 type Channel interface {

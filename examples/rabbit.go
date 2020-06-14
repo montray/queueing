@@ -29,6 +29,7 @@ func main() {
 		log.Fatal(err)
 	}
 
+
 	msgs, err := ch.Consume()
 
 	if err != nil {
@@ -36,6 +37,6 @@ func main() {
 	}
 
 	for v := range msgs {
-		fmt.Println(string(v.Body))
+		fmt.Println(string(v.GetBody()))
 	}
 }
